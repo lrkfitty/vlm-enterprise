@@ -1,0 +1,9 @@
+{
+  "functions": {
+    "api/book.py": { "runtime": "python3.9" }
+  },
+  "routes": [
+    { "src": "/api/book", "dest": "/api/book.py" },
+    { "src": "/(.*)",     "dest": "/$1" }
+  ]
+}
