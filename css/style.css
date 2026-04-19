@@ -298,7 +298,7 @@ a:hover .arrow { transform: translateX(3px); }
 }
 .verticals-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 2px;
   margin-top: 48px;
 }
@@ -348,7 +348,7 @@ a:hover .arrow { transform: translateX(3px); }
   background: var(--bg-2);
 }
 .proof-accounts {
-  display: grid; grid-template-columns: 1fr 1fr;
+  display: grid; grid-template-columns: repeat(4, 1fr);
   gap: 16px; margin: 40px 0 60px;
 }
 .proof-card {
@@ -379,10 +379,33 @@ a:hover .arrow { transform: translateX(3px); }
   padding: var(--section-py) 0;
   background: var(--bg);
 }
+.pricing-tier-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 48px; margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.pricing-tier-label--spaced { margin-top: 80px; }
+
 .pricing-grid {
   display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 16px; margin-top: 48px;
+  gap: 16px; margin-top: 0;
   align-items: start;
+}
+.pricing-grid--two { grid-template-columns: repeat(2, 1fr); max-width: 800px; }
+
+.btn-secondary-style {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid rgba(0,255,136,0.4);
+}
+.btn-secondary-style:hover {
+  background: rgba(0,255,136,0.08);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 32px rgba(0,255,136,0.1);
 }
 .pricing-card {
   background: var(--bg-2); border: 1px solid var(--border);
@@ -544,15 +567,21 @@ a:hover .arrow { transform: translateX(3px); }
 .delay-4 { transition-delay: 0.4s; }
 
 /* ── RESPONSIVE ───────────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .verticals-grid { grid-template-columns: repeat(2, 1fr); }
+  .proof-accounts { grid-template-columns: repeat(2, 1fr); }
+}
 @media (max-width: 900px) {
   .solution-grid,
   .booking-grid { grid-template-columns: 1fr; }
   .stats-row,
   .verticals-grid,
-  .pricing-grid { grid-template-columns: 1fr; }
+  .pricing-grid,
+  .pricing-grid--two { grid-template-columns: 1fr; }
   .proof-accounts,
   .image-grid { grid-template-columns: 1fr 1fr; }
   .form-row { grid-template-columns: 1fr; }
+  .pricing-grid--two { max-width: 100%; }
 }
 @media (max-width: 600px) {
   .proof-accounts,

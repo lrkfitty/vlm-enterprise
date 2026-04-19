@@ -103,6 +103,18 @@ if (form) {
   });
 }
 
+/* ── ?book=1 AUTO-SCROLL ─────────────────────────────────────────────────── */
+if (new URLSearchParams(window.location.search).get('book') === '1') {
+  window.addEventListener('load', () => {
+    const bookSection = document.getElementById('book');
+    if (bookSection) {
+      setTimeout(() => {
+        window.scrollTo({ top: bookSection.offsetTop - (nav.offsetHeight + 20), behavior: 'smooth' });
+      }, 400);
+    }
+  });
+}
+
 /* ── SMOOTH ANCHOR SCROLL ────────────────────────────────────────────────── */
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {
