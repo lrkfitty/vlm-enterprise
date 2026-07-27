@@ -2,7 +2,7 @@
 Vercel serverless function — handles booking form submission.
 POST /api/book
 """
-import os, json, smtplib
+import os, json, smtplib, uuid, datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from http.server import BaseHTTPRequestHandler
@@ -10,8 +10,12 @@ from http.server import BaseHTTPRequestHandler
 SMTP_HOST  = "mail.privateemail.com"
 SMTP_PORT  = 587
 FROM_ADDR  = "hello@vlmcreateflow.com"
-FROM_PASS  = os.getenv("SMTP_HELLO_PASS", "Vlmcreateflow1!")
+FROM_PASS  = os.getenv("SMTP_HELLO_PASS")
 NOTIFY     = ["tylarkin@vlmcreateflow.com", "virallensemediavlm@gmail.com"]
+
+S3_BUCKET  = os.getenv("S3_BUCKET_NAME")
+S3_REGION  = os.getenv("AWS_REGION", "ap-southeast-2")
+S3_PREFIX  = "vlm-enterprise-leads"
 
 
 def _send(subject, body, to, reply_to=None):
@@ -28,6 +32,21 @@ def _send(subject, body, to, reply_to=None):
         s.sendmail(FROM_ADDR, to, msg.as_string())
 
 
+def _log_lead_to_s3(record):
+    if not S3_BUCKET:
+        return  # not configured yet — never block the form on this
+    import boto3
+    s3 = boto3.client("s3", region_name=S3_REGION)
+    ts = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+    key = f"{S3_PREFIX}/{ts}_{uuid.uuid4().hex[:8]}.json"
+    s3.put_object(
+        Bucket=S3_BUCKET,
+        Key=key,
+        Body=json.dumps(record, indent=2),
+        ContentType="application/json",
+    )
+
+
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         length = int(self.headers.get("Content-Length", 0))
@@ -40,7 +59,20 @@ class handler(BaseHTTPRequestHandler):
         message      = body.get("message", "")
         first        = name.split()[0] if name else "there"
 
-        # Notify Ty
+        # Lead log — written first so an SMTP outage can never lose the lead
+        try:
+            _log_lead_to_s3({
+                "name": name,
+                "email": email,
+                "company": company,
+                "availability": availability,
+                "message": message,
+                "source": "enterprise-site",
+                "received_at": datetime.datetime.utcnow().isoformat() + "Z",
+            })
+        except: pass
+
+        # Internal notification
         notify_body = f"""New Setup Call Booking — VLM Enterprise
 
 Name:         {name}
@@ -60,7 +92,7 @@ Source:       enterprise.vlmcreateflow.com
 
 Got your request — you're on the list.
 
-I'll reach out within a few hours to confirm a time for your setup call.
+Our team will reach out within a few hours to confirm a time for your setup call.
 
 On the call we'll:
 - Walk through the system live for {company}
@@ -71,7 +103,7 @@ If you want to share any brand assets before we talk — existing content, brand
 
 Talk soon.
 
-— Ty
+— The VLM Team
 Viral Lense Media
 hello@vlmcreateflow.com
 """
